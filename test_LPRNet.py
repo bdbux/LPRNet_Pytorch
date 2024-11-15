@@ -166,7 +166,7 @@ def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
     if (isinstance(img, np.ndarray)):  # detect opencv format or not
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
-    fontText = ImageFont.truetype("data/NotoSansCJK-Regular.ttc", textSize, encoding="utf-8")
+    fontText = ImageFont.truetype("LPRNet_Pytorch/data/NotoSansCJK-Regular.ttc", textSize, encoding="utf-8")
     draw.text(pos, text, textColor, font=fontText)
 
     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
