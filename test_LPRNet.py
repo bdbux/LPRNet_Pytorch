@@ -21,6 +21,7 @@ import torch
 import time
 import cv2
 import os
+import matplotlib.pyplot as plt
 
 def get_parser():
     parser = argparse.ArgumentParser(description='parameters to train net')
@@ -62,7 +63,7 @@ def test():
 
     # load pretrained model
     if args.pretrained_model:
-        lprnet.load_state_dict(torch.load(args.pretrained_model))
+        lprnet.load_state_dict(torch.load(args.pretrained_model), weights_only=True)
         print("load pretrained model successful!")
     else:
         print("[Error] Can't found pretrained mode, please check!")
@@ -139,8 +140,46 @@ def Greedy_Decode_Eval(Net, datasets, args):
     t2 = time.time()
     print("[Info] Test Speed: {}s 1/{}]".format((t2 - t1) / len(datasets), len(datasets)))
 
+# def show(img, label, target):
+#     img = np.transpose(img, (1, 2, 0))
+#     img *= 128.
+#     img += 127.5
+#     img = img.astype(np.uint8)
+
+#     lb = ""
+#     for i in label:
+#         lb += CHARS[i]
+#     tg = ""
+#     for j in target.tolist():
+#         tg += CHARS[int(j)]
+
+#     flag = "F"
+#     if lb == tg:
+#         flag = "T"
+#     # img = cv2.putText(img, lb, (0,16), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.6, (0, 0, 255), 1)
+#     img = cv2ImgAddText(img, lb, (0, 0))
+#     cv2.imshow("test", img)
+#     print("target: ", tg, " ### {} ### ".format(flag), "predict: ", lb)
+#     cv2.waitKey()
+#     cv2.destroyAllWindows()
+
+# def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
+#     if (isinstance(img, np.ndarray)):  # detect opencv format or not
+#         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+#     draw = ImageDraw.Draw(img)
+#     fontText = ImageFont.truetype("LPRNet_Pytorch/data/NotoSansCJK-Regular.ttc", textSize, encoding="utf-8")
+#     draw.text(pos, text, textColor, font=fontText)
+
+#     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+
+def show_image_in_colab(img, title=""):
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    plt.title(title)
+    plt.axis("off")
+    plt.show()
+
 def show(img, label, target):
-    img = np.transpose(img, (1, 2, 0))
+    img = np.transpose(img, (1, 2, 0))  # Rearrange channels for visualization
     img *= 128.
     img += 127.5
     img = img.astype(np.uint8)
@@ -155,20 +194,28 @@ def show(img, label, target):
     flag = "F"
     if lb == tg:
         flag = "T"
-    # img = cv2.putText(img, lb, (0,16), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.6, (0, 0, 255), 1)
+
+    # Add text to the image
     img = cv2ImgAddText(img, lb, (0, 0))
-    cv2.imshow("test", img)
+
+    # Display the image in Colab
+    show_image_in_colab(img, title=f"Target: {tg} | Predict: {lb} | Match: {flag}")
+
     print("target: ", tg, " ### {} ### ".format(flag), "predict: ", lb)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
 
 def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
-    if (isinstance(img, np.ndarray)):  # detect opencv format or not
+    if isinstance(img, np.ndarray):  # Check if the image is OpenCV format
         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
     draw = ImageDraw.Draw(img)
-    fontText = ImageFont.truetype("LPRNet_Pytorch/data/NotoSansCJK-Regular.ttc", textSize, encoding="utf-8")
+
+    # Load the font file
+    font_path = "LPRNet_Pytorch/data/NotoSansCJK-Regular.ttc"  # Update to the correct path
+    fontText = ImageFont.truetype(font_path, textSize, encoding="utf-8")
+
+    # Draw the text on the image
     draw.text(pos, text, textColor, font=fontText)
 
+    # Convert back to OpenCV format
     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
 
