@@ -49,7 +49,7 @@ def get_parser():
     parser.add_argument('--phase_train', default=False, type=bool, help='train or test phase flag.')
     parser.add_argument('--num_workers', default=2, type=int, help='Number of workers used in dataloading')
     parser.add_argument('--cuda', default=True, type=bool, help='Use cuda to train model')
-    parser.add_argument('--show', default=True, type=bool, help='show test image and its predict result or not.')
+    parser.add_argument('--show', default=False, type=bool, help='show test image and its predict result or not.')
     parser.add_argument('--pretrained_model', default='LPRNet_Pytorch/weights/Final_LPRNet_model.pth', help='pretrained base model')
 
     args = parser.parse_args()
