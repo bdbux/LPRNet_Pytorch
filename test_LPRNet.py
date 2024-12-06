@@ -202,10 +202,28 @@ def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
     # Convert back to OpenCV format
     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
+def get_model(args):
+    model = build_lprnet(
+        lpr_max_len=args.lpr_max_len,
+        phase=args.phase_train,
+        class_num=len(CHARS),
+        dropout_rate=args.dropout_rate
+    )
+    device = torch.device("cuda:0" if args.cuda and torch.cuda.is_available() else "cpu")
+    model.to(device)
+
+    # Load pretrained model
+    if args.pretrained_model:
+        model.load_state_dict(torch.load(args.pretrained_model, map_location=device))
+        print("Loaded pretrained model successfully!")
+    else:
+        print("[Warning] Pretrained model not found. Returning untrained model.")
+    return model
+
+
 def main():
     args = get_parser()
     test(args)
     
-
 if __name__ == "__main__":
     main()
