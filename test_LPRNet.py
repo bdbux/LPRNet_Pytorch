@@ -24,6 +24,22 @@ import os
 import matplotlib.pyplot as plt
 
 def get_parser():
+    # if script is imported provide default args
+    if __name__ != 'main':
+        class Args:
+            img_size = [94, 24]
+            test_img_dirs = "LPRNet_Pytorch/data/test"
+            dropout_rate = 0
+            lpr_max_len = 8
+            test_batch_size = 100
+            phase_train = False
+            num_workers = 2
+            cuda = True
+            show = True
+            pretrained_model = "LPRNet_Pytorch/weights/Final_LPRNet_model.pth"
+        return Args()
+
+    # else run as normal
     parser = argparse.ArgumentParser(description='parameters to train net')
     parser.add_argument('--img_size', default=[94, 24], help='the image size')
     parser.add_argument('--test_img_dirs', default="LPRNet_Pytorch/data/test", help='the test images path')
@@ -53,8 +69,7 @@ def collate_fn(batch):
 
     return (torch.stack(imgs, 0), torch.from_numpy(labels), lengths)
 
-def test():
-    args = get_parser()
+def test(args):
 
     lprnet = build_lprnet(lpr_max_len=args.lpr_max_len, phase=args.phase_train, class_num=len(CHARS), dropout_rate=args.dropout_rate)
     device = torch.device("cuda:0" if args.cuda else "cpu")
@@ -139,39 +154,7 @@ def Greedy_Decode_Eval(Net, datasets, args):
     print("[Info] Test Accuracy: {} [{}:{}:{}:{}]".format(Acc, Tp, Tn_1, Tn_2, (Tp+Tn_1+Tn_2)))
     t2 = time.time()
     print("[Info] Individual Test Speed: {}s 1/{}]".format((t2 - t1) / len(datasets), len(datasets)))
-    print("Total time: " + (t2 - t1))
-
-# def show(img, label, target):
-#     img = np.transpose(img, (1, 2, 0))
-#     img *= 128.
-#     img += 127.5
-#     img = img.astype(np.uint8)
-
-#     lb = ""
-#     for i in label:
-#         lb += CHARS[i]
-#     tg = ""
-#     for j in target.tolist():
-#         tg += CHARS[int(j)]
-
-#     flag = "F"
-#     if lb == tg:
-#         flag = "T"
-#     # img = cv2.putText(img, lb, (0,16), cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.6, (0, 0, 255), 1)
-#     img = cv2ImgAddText(img, lb, (0, 0))
-#     cv2.imshow("test", img)
-#     print("target: ", tg, " ### {} ### ".format(flag), "predict: ", lb)
-#     cv2.waitKey()
-#     cv2.destroyAllWindows()
-
-# def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
-#     if (isinstance(img, np.ndarray)):  # detect opencv format or not
-#         img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-#     draw = ImageDraw.Draw(img)
-#     fontText = ImageFont.truetype("LPRNet_Pytorch/data/NotoSansCJK-Regular.ttc", textSize, encoding="utf-8")
-#     draw.text(pos, text, textColor, font=fontText)
-
-#     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+    print("Total time: " + str(t2 - t1) + " seconds")
 
 def show_image_in_colab(img, title=""):
     plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
@@ -219,6 +202,10 @@ def cv2ImgAddText(img, text, pos, textColor=(255, 0, 0), textSize=12):
     # Convert back to OpenCV format
     return cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
 
+def main():
+    args = get_parser()
+    test(args)
+    
 
 if __name__ == "__main__":
-    test()
+    main()
