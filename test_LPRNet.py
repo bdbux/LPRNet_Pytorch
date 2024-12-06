@@ -35,7 +35,7 @@ def get_parser():
             phase_train = False
             num_workers = 2
             cuda = True
-            show = True
+            show = False
             pretrained_model = "LPRNet_Pytorch/weights/Final_LPRNet_model.pth"
         return Args()
 
