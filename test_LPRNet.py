@@ -138,7 +138,8 @@ def Greedy_Decode_Eval(Net, datasets, args):
     Acc = Tp * 1.0 / (Tp + Tn_1 + Tn_2)
     print("[Info] Test Accuracy: {} [{}:{}:{}:{}]".format(Acc, Tp, Tn_1, Tn_2, (Tp+Tn_1+Tn_2)))
     t2 = time.time()
-    print("[Info] Test Speed: {}s 1/{}]".format((t2 - t1) / len(datasets), len(datasets)))
+    print("[Info] Individual Test Speed: {}s 1/{}]".format((t2 - t1) / len(datasets), len(datasets)))
+    print("Total time: " + (t2 - t1))
 
 # def show(img, label, target):
 #     img = np.transpose(img, (1, 2, 0))
