@@ -69,25 +69,30 @@ def collate_fn(batch):
 
     return (torch.stack(imgs, 0), torch.from_numpy(labels), lengths)
 
-def test(args):
-
-    lprnet = build_lprnet(lpr_max_len=args.lpr_max_len, phase=args.phase_train, class_num=len(CHARS), dropout_rate=args.dropout_rate)
-    device = torch.device("cuda:0" if args.cuda else "cpu")
-    lprnet.to(device)
-    print("Successful to build network!")
-
-    # load pretrained model
-    if args.pretrained_model:
-        lprnet.load_state_dict(torch.load(args.pretrained_model))
-        print("load pretrained model successful!")
+def test(args, model=None):
+    if model != None:
+        device = torch.device("cuda:0" if args.cuda else "cpu")
+        model.to(device)
+        print("Build successful with provided model!")
     else:
-        print("[Error] Can't found pretrained mode, please check!")
-        return False
+        lprnet = build_lprnet(lpr_max_len=args.lpr_max_len, phase=args.phase_train, class_num=len(CHARS), dropout_rate=args.dropout_rate)
+        device = torch.device("cuda:0" if args.cuda else "cpu")
+        lprnet.to(device)
+        print("Successful to build network!")
+
+        # load pretrained model
+        if args.pretrained_model:
+            lprnet.load_state_dict(torch.load(args.pretrained_model))
+            print("load pretrained model successful!")
+        else:
+            print("[Error] Can't found pretrained mode, please check!")
+            return False
+        model = lprnet
 
     test_img_dirs = os.path.expanduser(args.test_img_dirs)
     test_dataset = LPRDataLoader(test_img_dirs.split(','), args.img_size, args.lpr_max_len)
     try:
-        Greedy_Decode_Eval(lprnet, test_dataset, args)
+        Greedy_Decode_Eval(model, test_dataset, args)
     finally:
         cv2.destroyAllWindows()
 
