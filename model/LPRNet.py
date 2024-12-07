@@ -26,7 +26,7 @@ class LPRNet(nn.Module):
 
         # Define AvgPool2d as a submodule
         self.avg_pool1 = nn.AvgPool2d(kernel_size=5, stride=5)
-        self.avg_pool2 = nn.AvgPool2d(kernel_size(4, 10), stride=(4, 2)
+        self.avg_pool2 = nn.AvgPool2d(kernel_size(4, 10), stride=(4, 2))
 
         # Quantization stubs
         self.quant = torch.quantization.QuantStub()
