@@ -62,7 +62,7 @@ class LPRNet(nn.Module):
         x = self.quant(x)
 
         # Add dummy depth dim to solve dim mismatch
-        x = x.unsqueeze(2)
+        #x = x.unsqueeze(2)
         
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
@@ -83,7 +83,7 @@ class LPRNet(nn.Module):
 
         x = torch.cat(global_context, 1)
 
-        x = x.squeeze(2)
+        #x = x.squeeze(2)
         
         x = self.container(x)
         logits = torch.mean(x, dim=2)
