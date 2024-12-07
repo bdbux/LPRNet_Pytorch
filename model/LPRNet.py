@@ -66,13 +66,13 @@ class LPRNet(nn.Module):
         
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
-            if isinstance(layer, nn.MaxPool3d):
-                x = x.unsqueeze(2)
-                x = layer(x)
-                x = x.squeeze(2)
-            else:
-                x = layer(x)
-            #x = layer(x)
+            # if isinstance(layer, nn.MaxPool3d):
+            #     x = x.unsqueeze(2)
+            #     x = layer(x)
+            #     x = x.squeeze(2)
+            # else:
+            #     x = layer(x)
+            x = layer(x)
             if i in [2, 6, 13, 22]: # [2, 4, 8, 11, 22]
                 keep_features.append(x)
 
