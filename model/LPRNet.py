@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.quantization
 
 class small_basic_block(nn.Module):
     def __init__(self, ch_in, ch_out):
@@ -22,6 +23,11 @@ class LPRNet(nn.Module):
         self.phase = phase
         self.lpr_max_len = lpr_max_len
         self.class_num = class_num
+
+        # Quantization stubs
+        self.quant = torch.quantization.QuantStub()
+        self.dequant = torch.quantization.DeQuantStub()
+        
         self.backbone = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
             nn.BatchNorm2d(num_features=64),
@@ -56,6 +62,8 @@ class LPRNet(nn.Module):
         )
 
     def forward(self, x):
+        x = self.quant(x)
+        
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
             x = layer(x)
@@ -76,6 +84,8 @@ class LPRNet(nn.Module):
         x = torch.cat(global_context, 1)
         x = self.container(x)
         logits = torch.mean(x, dim=2)
+
+        logits = self.dequant(logits)
 
         return logits
 
