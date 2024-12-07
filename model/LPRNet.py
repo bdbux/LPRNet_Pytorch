@@ -69,6 +69,9 @@ class LPRNet(nn.Module):
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
             x = layer(x)
+            if isinstance(layer, nn.MaxPool3d):
+                x = x.squeeze(2)
+            
             if i in [2, 6, 13, 22]: # [2, 4, 8, 11, 22]
                 keep_features.append(x)
 
@@ -82,8 +85,6 @@ class LPRNet(nn.Module):
             f_mean = torch.mean(f_pow)
             f = torch.div(f, f_mean)
             global_context.append(f)
-
-        x = x.squeeze(2)
         
         x = torch.cat(global_context, 1)
         x = self.container(x)
