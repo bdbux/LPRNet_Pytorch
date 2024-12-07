@@ -24,6 +24,10 @@ class LPRNet(nn.Module):
         self.lpr_max_len = lpr_max_len
         self.class_num = class_num
 
+        # Define AvgPool2d as a submodule
+        self.avg_pool1 = nn.AvgPool2d(kernel_size=5, stride=5)
+        self.avg_pool2 = nn.AvgPool2d(kernel_size(4, 10), stride=(4, 2)
+
         # Quantization stubs
         self.quant = torch.quantization.QuantStub()
         self.dequant = torch.quantization.DeQuantStub()
@@ -79,9 +83,11 @@ class LPRNet(nn.Module):
         global_context = list()
         for i, f in enumerate(keep_features):
             if i in [0, 1]:
-                f = nn.AvgPool2d(kernel_size=5, stride=5)(f)
+                #f = nn.AvgPool2d(kernel_size=5, stride=5)(f)
+                f = self.avg_pool1(f)
             if i in [2]:
-                f = nn.AvgPool2d(kernel_size=(4, 10), stride=(4, 2))(f)
+                #f = nn.AvgPool2d(kernel_size=(4, 10), stride=(4, 2))(f)
+                f = self.avg_pool2(f)
             f_pow = torch.pow(f, 2)
             f_mean = torch.mean(f_pow)
             f = torch.div(f, f_mean)
