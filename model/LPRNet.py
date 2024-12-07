@@ -63,11 +63,11 @@ class LPRNet(nn.Module):
 
     def forward(self, x):
         x = self.quant(x)
-
-        x = x.unsqueeze(2)
         
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
+            if isinstance(layer, nn.MaxPool3d):
+                x = x.unsqueeze(2)
             x = layer(x)
             if isinstance(layer, nn.MaxPool3d):
                 x = x.squeeze(2)
