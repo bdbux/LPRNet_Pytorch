@@ -63,6 +63,8 @@ class LPRNet(nn.Module):
 
     def forward(self, x):
         x = self.quant(x)
+
+        x = x.unsqueeze(2)
         
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
@@ -81,6 +83,8 @@ class LPRNet(nn.Module):
             f = torch.div(f, f_mean)
             global_context.append(f)
 
+        x = x.squeeze(2)
+        
         x = torch.cat(global_context, 1)
         x = self.container(x)
         logits = torch.mean(x, dim=2)
