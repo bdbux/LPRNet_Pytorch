@@ -28,22 +28,62 @@ class LPRNet(nn.Module):
         self.quant = torch.quantization.QuantStub()
         self.dequant = torch.quantization.DeQuantStub()
         
+        # self.backbone = nn.Sequential(
+        #     nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
+        #     nn.BatchNorm2d(num_features=64),
+        #     nn.ReLU(),  # 2
+            
+        #     #nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
+        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 1))
+            
+        #     small_basic_block(ch_in=64, ch_out=128),    # *** 4 ***
+        #     nn.BatchNorm2d(num_features=128),
+        #     nn.ReLU(),  # 6
+            
+        #     nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
+            
+        #     small_basic_block(ch_in=64, ch_out=256),   # 8
+        #     nn.BatchNorm2d(num_features=256),
+        #     nn.ReLU(),  # 10
+        #     small_basic_block(ch_in=256, ch_out=256),   # *** 11 ***
+        #     nn.BatchNorm2d(num_features=256),   # 12
+        #     nn.ReLU(),
+        #     nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(4, 1, 2)),  # 14
+        #     nn.Dropout(dropout_rate),
+        #     nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(1, 4), stride=1),  # 16
+        #     nn.BatchNorm2d(num_features=256),
+        #     nn.ReLU(),  # 18
+        #     nn.Dropout(dropout_rate),
+        #     nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1), # 20
+        #     nn.BatchNorm2d(num_features=class_num),
+        #     nn.ReLU(),  # *** 22 ***
+        # )
+
         self.backbone = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),  # 2
-            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
-            small_basic_block(ch_in=64, ch_out=128),    # *** 4 ***
+        
+            # Originally MaxPool3d(kernel_size=(1,3,3), stride=(1,1,1))
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 1)),
+            
+            small_basic_block(ch_in=64, ch_out=128),    # 4
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(),  # 6
-            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
+        
+            # Originally MaxPool3d(kernel_size=(1,3,3), stride=(2,1,2))
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2)),
+        
             small_basic_block(ch_in=64, ch_out=256),   # 8
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),  # 10
-            small_basic_block(ch_in=256, ch_out=256),   # *** 11 ***
+            small_basic_block(ch_in=256, ch_out=256),   # 11
             nn.BatchNorm2d(num_features=256),   # 12
             nn.ReLU(),
-            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(4, 1, 2)),  # 14
+        
+            # Originally MaxPool3d(kernel_size=(1,3,3), stride=(4,1,2))
+            nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2)),
+        
             nn.Dropout(dropout_rate),
             nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(1, 4), stride=1),  # 16
             nn.BatchNorm2d(num_features=256),
@@ -51,8 +91,10 @@ class LPRNet(nn.Module):
             nn.Dropout(dropout_rate),
             nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1), # 20
             nn.BatchNorm2d(num_features=class_num),
-            nn.ReLU(),  # *** 22 ***
+            nn.ReLU(),  # 22
         )
+
+        
         self.container = nn.Sequential(
             nn.Conv2d(in_channels=448+self.class_num, out_channels=self.class_num, kernel_size=(1, 1), stride=(1, 1)),
             # nn.BatchNorm2d(num_features=self.class_num),
