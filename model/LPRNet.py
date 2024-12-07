@@ -32,15 +32,11 @@ class LPRNet(nn.Module):
             nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
             nn.BatchNorm2d(num_features=64),
             nn.ReLU(),  # 2
-            
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
-            
             small_basic_block(ch_in=64, ch_out=128),    # *** 4 ***
             nn.BatchNorm2d(num_features=128),
             nn.ReLU(),  # 6
-            
             nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
-            
             small_basic_block(ch_in=64, ch_out=256),   # 8
             nn.BatchNorm2d(num_features=256),
             nn.ReLU(),  # 10
@@ -57,12 +53,16 @@ class LPRNet(nn.Module):
             nn.BatchNorm2d(num_features=class_num),
             nn.ReLU(),  # *** 22 ***
         )
-    
+        self.container = nn.Sequential(
+            nn.Conv2d(in_channels=448+self.class_num, out_channels=self.class_num, kernel_size=(1, 1), stride=(1, 1)),
+            # nn.BatchNorm2d(num_features=self.class_num),
+            # nn.ReLU(),
+            # nn.Conv2d(in_channels=self.class_num, out_channels=self.lpr_max_len+1, kernel_size=3, stride=2),
+            # nn.ReLU(),
+        )
+
     def forward(self, x):
         x = self.quant(x)
-
-        # Add dummy depth dim to solve dim mismatch
-        #x = x.unsqueeze(2)
         
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
@@ -82,9 +82,6 @@ class LPRNet(nn.Module):
             global_context.append(f)
 
         x = torch.cat(global_context, 1)
-
-        #x = x.squeeze(2)
-        
         x = self.container(x)
         logits = torch.mean(x, dim=2)
 
