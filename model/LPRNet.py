@@ -28,70 +28,41 @@ class LPRNet(nn.Module):
         self.quant = torch.quantization.QuantStub()
         self.dequant = torch.quantization.DeQuantStub()
         
-        # self.backbone = nn.Sequential(
-        #     nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
-        #     nn.BatchNorm2d(num_features=64),
-        #     nn.ReLU(),  # 2
-            
-        #     #nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
-        #     nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 1))
-            
-        #     small_basic_block(ch_in=64, ch_out=128),    # *** 4 ***
-        #     nn.BatchNorm2d(num_features=128),
-        #     nn.ReLU(),  # 6
-            
-        #     nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
-            
-        #     small_basic_block(ch_in=64, ch_out=256),   # 8
-        #     nn.BatchNorm2d(num_features=256),
-        #     nn.ReLU(),  # 10
-        #     small_basic_block(ch_in=256, ch_out=256),   # *** 11 ***
-        #     nn.BatchNorm2d(num_features=256),   # 12
-        #     nn.ReLU(),
-        #     nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(4, 1, 2)),  # 14
-        #     nn.Dropout(dropout_rate),
-        #     nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(1, 4), stride=1),  # 16
-        #     nn.BatchNorm2d(num_features=256),
-        #     nn.ReLU(),  # 18
-        #     nn.Dropout(dropout_rate),
-        #     nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1), # 20
-        #     nn.BatchNorm2d(num_features=class_num),
-        #     nn.ReLU(),  # *** 22 ***
-        # )
-
         self.backbone = nn.Sequential(
-        nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1),
-        nn.BatchNorm2d(num_features=64),
-        nn.ReLU(),
-        nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 1)),
+            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=3, stride=1), # 0
+            nn.BatchNorm2d(num_features=64),
+            nn.ReLU(),  # 2
+            
+            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(1, 1, 1)),
+            
+            small_basic_block(ch_in=64, ch_out=128),    # *** 4 ***
+            nn.BatchNorm2d(num_features=128),
+            nn.ReLU(),  # 6
+            
+            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(2, 1, 2)),
+            
+            small_basic_block(ch_in=64, ch_out=256),   # 8
+            nn.BatchNorm2d(num_features=256),
+            nn.ReLU(),  # 10
+            small_basic_block(ch_in=256, ch_out=256),   # *** 11 ***
+            nn.BatchNorm2d(num_features=256),   # 12
+            nn.ReLU(),
+            nn.MaxPool3d(kernel_size=(1, 3, 3), stride=(4, 1, 2)),  # 14
+            nn.Dropout(dropout_rate),
+            nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(1, 4), stride=1),  # 16
+            nn.BatchNorm2d(num_features=256),
+            nn.ReLU(),  # 18
+            nn.Dropout(dropout_rate),
+            nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1), # 20
+            nn.BatchNorm2d(num_features=class_num),
+            nn.ReLU(),  # *** 22 ***
+        )
     
-        small_basic_block(ch_in=64, ch_out=128),
-        nn.BatchNorm2d(num_features=128),
-        nn.ReLU(),
-        nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2)),
-    
-        # After the first block, we have 128 channels, so update this line:
-        small_basic_block(ch_in=128, ch_out=256),
-        nn.BatchNorm2d(num_features=256),
-        nn.ReLU(),
-        small_basic_block(ch_in=256, ch_out=256),
-        nn.BatchNorm2d(num_features=256),
-        nn.ReLU(),
-        nn.MaxPool2d(kernel_size=(3, 3), stride=(1, 2)),
-    
-        nn.Dropout(dropout_rate),
-        nn.Conv2d(in_channels=64, out_channels=256, kernel_size=(1, 4), stride=1),
-        nn.BatchNorm2d(num_features=256),
-        nn.ReLU(),
-        nn.Dropout(dropout_rate),
-        nn.Conv2d(in_channels=256, out_channels=class_num, kernel_size=(13, 1), stride=1),
-        nn.BatchNorm2d(num_features=class_num),
-        nn.ReLU(),
-    )
-
-
     def forward(self, x):
         x = self.quant(x)
+
+        # Add dummy depth dim to solve dim mismatch
+        x = x.unsqueeze(2)
         
         keep_features = list()
         for i, layer in enumerate(self.backbone.children()):
@@ -111,6 +82,9 @@ class LPRNet(nn.Module):
             global_context.append(f)
 
         x = torch.cat(global_context, 1)
+
+        x = x.squeeze(2)
+        
         x = self.container(x)
         logits = torch.mean(x, dim=2)
 
